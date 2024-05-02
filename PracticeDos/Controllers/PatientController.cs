@@ -9,41 +9,41 @@ namespace UPB.PracticeDos.Controllers
     [ApiController]
     public class PatientController : ControllerBase
     {
-        private PatientManager _patienController;
-        public PatientController()
+        private readonly PatientManager _patientManager;
+        public PatientController(PatientManager patientManager)
         {
-            _patienController = new PatientManager();
+            _patientManager = patientManager;
         }
 
         [HttpGet]
         public List<Patient> Get()
         {
-            return _patienController.GetAll();
+            return _patientManager.GetAll();
         }
 
         [HttpGet]
         [Route("{ci}")]
         public Patient Get(int ci)
         {
-            return _patienController.GetById(ci);
+            return _patientManager.GetById(ci);
         }
 
         [HttpPost]
         public void Post([FromBody] Patient patient)
         {
-            _patienController.CreatePatient(patient);
+            _patientManager.CreatePatient(patient);
         }
 
         [HttpPut("{ci}")]
         public void Put(int ci, [FromBody] Patient patient)
         {
-            _patienController.UpdatePatient(ci, patient);
+            _patientManager.UpdatePatient(ci, patient);
         }
 
         [HttpDelete("{ci}")]
         public void Delete(int ci)
         {
-            _patienController.DeletePatient(ci);
+            _patientManager.DeletePatient(ci);
         }
     }
 }

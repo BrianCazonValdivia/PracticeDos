@@ -6,13 +6,14 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using UPB.BusinessLogic.Manager.Exceptions;
 
 namespace BusinessLogic.Manager
 {
     public class PatientManager
     {
         private List<Patient> _patients;
-        private IConfiguration _configuration;
+        private readonly IConfiguration _configuration;
 
         public PatientManager(IConfiguration configuration)
         {
@@ -25,8 +26,15 @@ namespace BusinessLogic.Manager
         public List<Patient> GetAll() { return _patients; }
 
         public Patient GetById(int ci)
-        {  
-            return _patients.Find(x => x.CI == ci); 
+        {
+            Patient? foundPatient = _patients.Find(x => x.CI == ci);
+
+            if (foundPatient == null)
+            {
+                throw new PatientNotFoundException();
+            }
+
+            return foundPatient; 
         }
 
         public void CreatePatient(Patient patient)
@@ -40,20 +48,34 @@ namespace BusinessLogic.Manager
             };
 
             _patients.Add(createdPatient);
+            escribirPacientes();
         }
 
         public void UpdatePatient(int ci, Patient patient)
         {
-            Patient foundPatient = _patients.Find(x => x.CI == ci);
+            Patient? foundPatient = _patients.Find(x => x.CI == ci);
+
+            if(foundPatient == null)
+            {
+                throw new PatientNotFoundException();
+            }
 
             foundPatient.Name = patient.Name;
             foundPatient.Lastname = patient.Lastname;
+            escribirPacientes();
         }
 
         public void DeletePatient(int ci)
         {
-            Patient patientToDelete = _patients.Find(x => x.CI == ci);
+            Patient? patientToDelete = _patients.Find(x => x.CI == ci);
+
+            if (patientToDelete == null)
+            {
+                throw new PatientNotFoundException();
+            }
+
             _patients.Remove(patientToDelete);
+            escribirPacientes();
         }
 
         private string GenerateBloodtype()
@@ -71,6 +93,7 @@ namespace BusinessLogic.Manager
             _patients.Clear();
 
             string patientsFile = _configuration.GetSection("PatientFilepath").Value;
+
             StreamReader lector = new StreamReader(patientsFile);
 
             while(!lector.EndOfStream)
