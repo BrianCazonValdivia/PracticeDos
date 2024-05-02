@@ -1,4 +1,5 @@
 ﻿using BusinessLogic.Models;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +12,14 @@ namespace BusinessLogic.Manager
     public class PatientManager
     {
         private List<Patient> _patients;
+        private IConfiguration _configuration;
 
-        public PatientManager()
+        public PatientManager(IConfiguration configuration)
         {
             _patients = new List<Patient>();
+            _configuration = configuration;
+
+            leerPacientes();
         }
 
         public List<Patient> GetAll() { return _patients; }
@@ -51,7 +56,7 @@ namespace BusinessLogic.Manager
             _patients.Remove(patientToDelete);
         }
 
-        private String GenerateBloodtype()
+        private string GenerateBloodtype()
         {
             string[] bloodtypes = { "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-" };
             Random rand = new Random();
@@ -59,6 +64,43 @@ namespace BusinessLogic.Manager
             int randomNum = rand.Next(bloodtypes.Length);
 
             return bloodtypes[randomNum];
+        }
+
+        private void leerPacientes()
+        {
+            _patients.Clear();
+
+            string patientsFile = _configuration.GetSection("PatientFilepath").Value;
+            StreamReader lector = new StreamReader(patientsFile);
+
+            while(!lector.EndOfStream)
+            {
+                string[] datosPaciente = lector.ReadLine().Split(",");
+                Patient newPatient = new Patient()
+                {
+                    Name = datosPaciente[0],
+                    Lastname = datosPaciente[1],
+                    CI = int.Parse(datosPaciente[2]),
+                    Bloodtype = datosPaciente[3]
+                };
+
+                _patients.Add(newPatient);
+            }
+            lector.Close();
+        }
+
+        private void escribirPacientes()
+        {
+            string patientsFile = _configuration.GetSection("PatientFilepath").Value;
+            StreamWriter escritor = new StreamWriter(patientsFile);
+
+            foreach(var patient in _patients)
+            {
+                string[] datosPaciente = { patient.Name, patient.Lastname, $"{patient.CI}", patient.Bloodtype };
+                
+                escritor.WriteLine(string.Join(",", datosPaciente));
+            }
+            escritor.Close();
         }
     }
 }

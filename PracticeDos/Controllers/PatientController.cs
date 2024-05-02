@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace UPB.PracticeDos.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
     public class PatientController : ControllerBase
     {
