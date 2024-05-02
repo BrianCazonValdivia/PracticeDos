@@ -1,5 +1,6 @@
 ﻿using BusinessLogic.Models;
 using Microsoft.Extensions.Configuration;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,7 @@ namespace BusinessLogic.Manager
     {
         private List<Patient> _patients;
         private readonly IConfiguration _configuration;
+        
 
         public PatientManager(IConfiguration configuration)
         {
@@ -31,7 +33,9 @@ namespace BusinessLogic.Manager
 
             if (foundPatient == null)
             {
-                throw new PatientNotFoundException();
+                PatientNotFoundException patientNotFoundException = new PatientNotFoundException();
+                //Log.Information(patientNotFoundException.getError());
+                throw patientNotFoundException;
             }
 
             return foundPatient; 
@@ -39,6 +43,15 @@ namespace BusinessLogic.Manager
 
         public void CreatePatient(Patient patient)
         {
+            Patient? foundPatient = _patients.Find(x => x.CI == patient.CI);
+
+            if (foundPatient != null)
+            {
+                PatientAlreadyExistsException patientNotFoundException = new PatientAlreadyExistsException();
+                //Log.Information(patientNotFoundException.getError());
+                throw patientNotFoundException;
+            }
+
             Patient createdPatient = new Patient()
             {
                 Name = patient.Name,
@@ -57,7 +70,9 @@ namespace BusinessLogic.Manager
 
             if(foundPatient == null)
             {
-                throw new PatientNotFoundException();
+                PatientNotFoundException patientNotFoundException = new PatientNotFoundException();
+                //Log.Information(patientNotFoundException.getError());
+                throw patientNotFoundException;
             }
 
             foundPatient.Name = patient.Name;
@@ -71,7 +86,9 @@ namespace BusinessLogic.Manager
 
             if (patientToDelete == null)
             {
-                throw new PatientNotFoundException();
+                PatientNotFoundException patientNotFoundException = new PatientNotFoundException();
+                Log.Information(patientNotFoundException.getError());
+                throw patientNotFoundException;
             }
 
             _patients.Remove(patientToDelete);
@@ -92,7 +109,16 @@ namespace BusinessLogic.Manager
         {
             _patients.Clear();
 
-            string patientsFile = _configuration.GetSection("PatientFilepath").Value;
+            string? patientsFile = _configuration.GetSection("PatientFilepath").Value;
+
+            if(patientsFile ==null)
+            {
+                JsonSectionNotFoundException jsonSectionNotFoundException = new JsonSectionNotFoundException();
+                
+
+              
+                throw jsonSectionNotFoundException;
+            }
 
             StreamReader lector = new StreamReader(patientsFile);
 
@@ -114,7 +140,16 @@ namespace BusinessLogic.Manager
 
         private void escribirPacientes()
         {
-            string patientsFile = _configuration.GetSection("PatientFilepath").Value;
+            string? patientsFile = _configuration.GetSection("PatientFilepath").Value;
+
+            if (patientsFile == null)
+            {
+                JsonSectionNotFoundException jsonSectionNotFoundException = new JsonSectionNotFoundException();
+                
+
+                throw jsonSectionNotFoundException;
+            }
+
             StreamWriter escritor = new StreamWriter(patientsFile);
 
             foreach(var patient in _patients)
