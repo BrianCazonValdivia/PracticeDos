@@ -25,7 +25,7 @@ namespace BusinessLogic.Manager
             leerPacientes();
         }
 
-        public List<Patient> GetAll() { return _patients; }
+        public List<Patient> GetAll() { Log.Information("Obteniendo datos de todos los Pacientes!!");  return _patients; }
 
         public Patient GetById(int ci)
         {
@@ -37,6 +37,8 @@ namespace BusinessLogic.Manager
                 //Log.Information(patientNotFoundException.getError());
                 throw patientNotFoundException;
             }
+
+            Log.Information("Obteniendo datos del Paciente con el ci!!");
 
             return foundPatient; 
         }
@@ -51,6 +53,8 @@ namespace BusinessLogic.Manager
                 //Log.Information(patientNotFoundException.getError());
                 throw patientNotFoundException;
             }
+
+            Log.Information("Creando Paciente!!");
 
             Patient createdPatient = new Patient()
             {
@@ -75,8 +79,11 @@ namespace BusinessLogic.Manager
                 throw patientNotFoundException;
             }
 
+            Log.Information("Actualizando los datos del Paciente!!");
+
             foundPatient.Name = patient.Name;
             foundPatient.Lastname = patient.Lastname;
+
             escribirPacientes();
         }
 
@@ -90,6 +97,8 @@ namespace BusinessLogic.Manager
                 Log.Information(patientNotFoundException.getError());
                 throw patientNotFoundException;
             }
+
+            Log.Information("Eliminando Paciente!!");
 
             _patients.Remove(patientToDelete);
             escribirPacientes();

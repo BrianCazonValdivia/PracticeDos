@@ -1,4 +1,5 @@
 using BusinessLogic.Manager;
+using Microsoft.OpenApi.Models;
 using Serilog;
 using UPB.PracticeDos.Midlewares;
 
@@ -16,6 +17,8 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.File(builder.Configuration.GetSection("LogFilepath").Value, rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
+Log.Information("Inicializando aplicacion!!");
+
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -23,17 +26,28 @@ builder.Services.AddSingleton<PatientManager>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+    {
+        options.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Title = builder.Configuration.GetSection("ApplicationName").Value,
+            Version = "v1"
+        });
+    }
+    );
 
 var app = builder.Build();
 
 app.UseExceptionHnadlerMiddleware();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName.Equals("QA") || app.Environment.EnvironmentName.Equals("UAT"))
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        options.DocumentTitle = builder.Configuration.GetSection("ApplicationName").Value;
+    });
 }
 
 //app.UseHttpsRedirection();
